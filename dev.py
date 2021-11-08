@@ -1,21 +1,13 @@
 import os
-from collections import OrderedDict
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import torchvision
-from torchvision import transforms, datasets
+
 import pytorch_lightning as pl
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torchvision
 import torchvision.transforms as transforms
-from pytorch_lightning import LightningDataModule, LightningModule, Trainer
+from pytorch_lightning import LightningDataModule, LightningModule
 from torch.utils.data import DataLoader, random_split
-from torchvision import datasets
-from torchvision.datasets import MNIST,FashionMNIST
+from torchvision.datasets import FashionMNIST
+
 PATH_DATASETS = 'data'
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 BATCH_SIZE = 256 if AVAIL_GPUS else 64
@@ -66,7 +58,7 @@ class FMNISTDataModule(LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-                self.femnist_train,
+            self.femnist_train,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
         )
@@ -96,7 +88,7 @@ class Generator(nn.Module):
             *block(110, 256, normalize=False),
             *block(256, 512),
             *block(512, 1024),
-            nn.Linear(1024, 28*28),
+            nn.Linear(1024, 28 * 28),
             nn.Tanh(),
         )
 
@@ -118,7 +110,7 @@ class Discriminator(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(10, 10)
         self.model = nn.Sequential(
-            nn.Linear(28*28+10, 512),
+            nn.Linear(28 * 28 + 10, 512),
 
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(512, 256),
@@ -139,10 +131,11 @@ class Discriminator(nn.Module):
         # so this return tensor and shape
         return img
 
+
 class CGAN(LightningModule):
 
     def __init__(
-        self,
+            self,
     ):
         super().__init__()
         self.generator = Generator()
@@ -228,6 +221,7 @@ class CGAN(LightningModule):
         g_optimizer = torch.optim.Adam(self.generator.parameters(), lr=0.0002)
         d_optimizer = torch.optim.Adam(self.discriminator.parameters(), lr=0.0002)
         return [g_optimizer, d_optimizer], []
+
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
